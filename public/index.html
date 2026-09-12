@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banty AI</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #071426;
+      color: white;
+    }
+    .app {
+      max-width: 600px;
+      margin: auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 18px;
+      background: #0d2038;
+      font-size: 24px;
+      font-weight: bold;
+      border-bottom: 1px solid #203955;
+    }
+    header span {
+      font-size: 13px;
+      color: #7db8ff;
+      margin-left: 8px;
+    }
+    #chat {
+      flex: 1;
+      padding: 18px;
+      overflow-y: auto;
+    }
+    .msg {
+      padding: 12px 15px;
+      margin: 10px 0;
+      border-radius: 14px;
+      max-width: 85%;
+      line-height: 1.5;
+    }
+    .user {
+      background: #1769d1;
+      margin-left: auto;
+    }
+    .ai {
+      background: #122a45;
+      margin-right: auto;
+    }
+    .bottom {
+      display: flex;
+      gap: 8px;
+      padding: 12px;
+      background: #0d2038;
+    }
+    input {
+      flex: 1;
+      padding: 13px;
+      border: 0;
+      border-radius: 12px;
+      outline: none;
+      font-size: 16px;
+    }
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 0 18px;
+      background: #2487ff;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header>
+      🤖 Banty AI <span>V3</span>
+    </header>
+
+    <div id="chat">
+      <div class="msg ai">
+        नमस्ते! 👋 मैं Banty AI हूँ। आप मुझसे कुछ भी पूछ सकते हैं।
+      </div>
+    </div>
+
+    <div class="bottom">
+      <input id="input" placeholder="कुछ पूछें..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    async function sendMessage() {
+      const input = document.getElementById("input");
+      const chat = document.getElementById("chat");
+      const message = input.value.trim();
+
+      if (!message) return;
+
+      chat.innerHTML += `<div class="msg user">${message}</div>`;
+      input.value = "";
+
+      const loading = document.createElement("div");
+      loading.className = "msg ai";
+      loading.textContent = "सोच रहा हूँ... 🤔";
+      chat.appendChild(loading);
+
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ message })
+        });
+
+        const data = await response.json();
+
+        loading.textContent =
+          data.reply || data.error || "कोई जवाब नहीं मिला।";
+      } catch (error) {
+        loading.textContent =
+          "अभी सर्वर से कनेक्शन नहीं हो पाया।";
+      }
+
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    document.getElementById("input").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") sendMessage();
+    });
+  </script>
+</body>
+</html>
